@@ -131,7 +131,7 @@ class Trips
     private function calculateDelta(float $delta, float $second): float
     {
         if ($second === 0) {
-            return INF;
+            return 0;
         }
 
         return (3600 * $delta) / $second;
