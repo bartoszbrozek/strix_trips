@@ -7,40 +7,78 @@ use App\Repository\TripsRepository;
 
 class Trips
 {
+    /**
+     * Repository of Trips
+     *
+     * @var TripsRepository
+     */
     private $tripsRepository;
+
+    /**
+     * Helper for array
+     *
+     * @var ArrayHelper
+     */
     private $arrayHelper;
 
+    /**
+     * Class contstructor
+     *
+     * @param TripsRepository $tripsRepository
+     * @param ArrayHelper $arrayHelper
+     */
     public function __construct(TripsRepository $tripsRepository, ArrayHelper $arrayHelper)
     {
         $this->tripsRepository = $tripsRepository;
         $this->arrayHelper = $arrayHelper;
     }
 
+    /**
+     * Calculate all available trips in database
+     *
+     * @return array
+     */
     public function calculateTrips(): array
     {
         $trips = $this->getAll();
-
         $data = [];
 
         foreach ($trips as $trip) {
-            $highestAverageSpeed = 0;
-
-            if (count($trip->getTripMeasures()) > 1) {
-                $averageSpeeds = $this->calculateAverageSpeeds($trip);
-                $highestAverageSpeed = $this->arrayHelper->getHighestValue($averageSpeeds);
-            }
-
-            $data[] = [
-                'trip' => $trip->getName(),
-                'distance' => $this->getDistance($trip),
-                'measure_interval' => $trip->getMeasureInterval(),
-                'avg_speed' => $highestAverageSpeed,
-            ];
+            $data[] = $this->calculateSingleTrip($trip);
         }
 
         return $data;
     }
 
+    /**
+     * Calculate single trip data
+     *
+     * @param EntityTrips $trip
+     * @return array
+     */
+    public function calculateSingleTrip(EntityTrips $trip): array
+    {
+        $highestAverageSpeed = 0;
+
+        if (count($trip->getTripMeasures()) > 1) {
+            $averageSpeeds = $this->calculateAverageSpeeds($trip);
+            $highestAverageSpeed = $this->arrayHelper->getHighestValue($averageSpeeds);
+        }
+
+        return [
+            'trip' => $trip->getName(),
+            'distance' => $this->getDistance($trip),
+            'measure_interval' => $trip->getMeasureInterval(),
+            'avg_speed' => $highestAverageSpeed,
+        ];
+    }
+
+    /**
+     * Calculate distance based on trip
+     *
+     * @param EntityTrips $trip
+     * @return float
+     */
     private function getDistance(EntityTrips $trip): float
     {
         $tripMeasures = $trip->getTripMeasures()->toArray();
@@ -49,21 +87,25 @@ class Trips
         return $lastTripMeasure->getDistance();
     }
 
-    public function getAll(): array
+    /**
+     * Get all trips
+     *
+     * @return array
+     */
+    private function getAll(): array
     {
         $trips = $this->tripsRepository->findAll();
 
         return $trips;
     }
 
-    public function getTripByID(int $id): EntityTrips
-    {
-        $trip = $this->tripsRepository->findOneBy(["id" => $id]);
-
-        return $trip;
-    }
-
-    public function calculateAverageSpeeds(EntityTrips $trip): array
+    /**
+     * Calculate average speed of trip
+     *
+     * @param EntityTrips $trip
+     * @return array
+     */
+    private function calculateAverageSpeeds(EntityTrips $trip): array
     {
         $intervals = $trip->getTripMeasures();
         $averageSpeeds = [];
@@ -79,8 +121,19 @@ class Trips
         return $averageSpeeds;
     }
 
+    /**
+     * Calculate delta
+     *
+     * @param float $delta
+     * @param float $second
+     * @return float
+     */
     private function calculateDelta(float $delta, float $second): float
     {
+        if ($second === 0) {
+            return INF;
+        }
+
         return (3600 * $delta) / $second;
     }
 }
