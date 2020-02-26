@@ -41,7 +41,7 @@ class Trips
         return $data;
     }
 
-    private function getDistance(EntityTrips $trip): int
+    private function getDistance(EntityTrips $trip): float
     {
         $tripMeasures = $trip->getTripMeasures()->toArray();
         $lastTripMeasure = end($tripMeasures);
