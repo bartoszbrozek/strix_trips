@@ -1,8 +1,20 @@
 # Trips
 
+## Requirements
+
++ PHP 7.3 or higher
++ MySQL 5.7 or higher
++ Composer
+
 ## Installation
 
 Create `.env` file based on `.env.example` file and set database connection
+
+### Install dependencies
+
+```
+composer install
+```
 
 ### Create database
 
@@ -35,3 +47,5 @@ bin/console doctrine:fixtures:load
 ```
 bin/console trips:calculate
 ```
+
+![0](./docs/img/1.png)

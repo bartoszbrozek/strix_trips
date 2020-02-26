@@ -40,10 +40,9 @@ class Trips
      */
     public function calculateTrips(): array
     {
-        $trips = $this->getAll();
         $data = [];
 
-        foreach ($trips as $trip) {
+        foreach ($this->getAll() as $trip) {
             $data[] = $this->calculateSingleTrip($trip);
         }
 
@@ -92,7 +91,7 @@ class Trips
      *
      * @return array
      */
-    private function getAll(): array
+    public function getAll(): array
     {
         $trips = $this->tripsRepository->findAll();
 
