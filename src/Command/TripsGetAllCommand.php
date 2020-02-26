@@ -2,40 +2,42 @@
 
 namespace App\Command;
 
+use App\Service\Trips;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 class TripsGetAllCommand extends Command
 {
-    protected static $defaultName = 'trips:get-all';
+    use ContainerAwareTrait;
 
-    protected function configure()
+    protected static $defaultName = 'trips:get-all';
+    private $trips;
+
+    public function __construct(Trips $trips)
     {
-        $this
-            ->setDescription('Add a short description for your command')
-            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-            ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
-        ;
+        $this->trips = $trips;
+        parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $arg1 = $input->getArgument('arg1');
+        $table = new Table($output);
+        $table->setHeaders(['trip', 'measure interval']);
+        $tableRows = [];
 
-        if ($arg1) {
-            $io->note(sprintf('You passed an argument: %s', $arg1));
+        foreach ($this->trips->getAll() as $trip) {
+            $tableRows[] = [
+                $trip->getName(),
+                $trip->getMeasureInterval()
+            ];
         }
 
-        if ($input->getOption('option1')) {
-            // ...
-        }
+        $table->setRows($tableRows);
 
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
+        $table->render();
 
         return 0;
     }
